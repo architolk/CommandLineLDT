@@ -1,0 +1,75 @@
+@font-face{
+	font-family:'futura';
+	src:url('../fonts/futurastdmedium.eot');
+	src:url('../fonts/futurastdmedium.eot?#iefix') format('embedded-opentype')
+		,url('../fonts/futurastdmedium.woff') format('woff')
+		,url('../fonts/futurastdmedium.ttf') format('truetype')
+		,url('../fonts/futurastdmedium.svg#') format('svg');
+	font-weight:normal;
+	font-style:normal;
+}
+.head {
+	height: 50px;
+	color: #ababab;
+	font-family: futura, Verdana, Geneva, sans-serif;
+	font-weight:normal;
+}
+.head a {
+	margin-top: 8px;
+	margin-left: 10px;
+	float: left;
+}
+.head span {
+	margin-top: 15px;
+	float: right;
+	margin-right: 20px;
+}
+
+.navbar-nav {
+	color: #333;
+	font-family: futura, Verdana, Geneva, sans-serif;
+}
+
+.btn-primary {
+  background-image: -webkit-linear-gradient(top, #E98300 0%, #CE7100 100%);
+  background-image:      -o-linear-gradient(top, #E98300 0%, #CE7100 100%);
+  background-image: -webkit-gradient(linear, left top, left bottom, from(#E98300), to(#CE7100));
+  background-image:         linear-gradient(to bottom, #E98300 0%, #CE7100 100%);
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ffE98300', endColorstr='#ffCE7100', GradientType=0);
+  filter: progid:DXImageTransform.Microsoft.gradient(enabled = false);
+  background-repeat: repeat-x;
+  background-color: #E98300;
+  border-color: #CE7100;
+}
+.btn-primary:hover,
+.btn-primary:focus {
+  background-color: #CE7100;
+  background-position: 0 -15px;
+}
+.btn-primary:active,
+.btn-primary.active {
+  background-color: #CE7100;
+  border-color: #CE7100;
+}
+.btn-primary.disabled,
+.btn-primary:disabled,
+.btn-primary[disabled] {
+  background-color: #CE7100;
+  background-image: none;
+}
+
+.btn,
+.panel,
+.panel-heading,
+.form-control {
+  border-radius: 0px;
+}
+
+.panel-primary  > .panel-heading{
+  background-color: #E98300;
+	font-family: futura, Verdana, Geneva, sans-serif;
+}
+
+.panel-primary {
+	border-color: #ababab;
+}

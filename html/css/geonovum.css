@@ -1,0 +1,252 @@
+#geonovumhead {
+     /*font-family: Verdana,Tahoma,"DejaVu Sans",sans-serif; */
+     font-size: 12px;
+}
+
+#geonovumhead p {
+     padding-bottom: 8px;
+     padding-top: 21px;
+}
+
+.head {
+     color: #ababab;
+     /* font-family: futura,Verdana,Geneva,sans-serif; */
+     font-weight: normal;
+     height: 50px;
+}
+
+.head a {
+     float: left;
+     margin-left: 10px;
+     margin-top: 8px;
+}
+
+.head span {
+     float: right;
+     margin-right: 20px;
+     margin-top: 15px;
+}
+
+.navbar-nav {
+     /* font-family: Verdana,Tahoma,"DejaVu Sans",sans-serif;*/
+     font-size: 18px;
+}
+
+.navbar-default {
+     background-color: #97c000;
+}
+
+.navbar-default .navbar-brand {
+     color: #ffffff;
+}
+
+.navbar-brand {
+     height: 46px;
+     padding-top: 13px;
+}
+
+.navbar-nav > li > a {
+     padding-bottom: 13px;
+     padding-top: 13px;
+}
+
+.navbar-form {
+     margin: 6px -15px;
+}
+
+.navbar-default .container {
+     padding-top: 4px;
+}
+
+.navbar-default .navbar-nav > li > a {
+     color: #ffffff;
+}
+
+.navbar-default .navbar-nav > li > a:hover, .navbar-default .navbar-nav > li > a:focus {
+     background-color: #ffffff;
+     color: #97c000;
+}
+
+.btn-primary {
+     background-color: #799a00;
+     border-color: #799a00;
+}
+
+.btn-primary:hover, .btn-primary:focus {
+     background-color: #799a00;
+     background-position: 0px -15px;
+     color: #c0c0c0;
+}
+
+.btn-primary:active, .btn-primary.active {
+     background-color: #ce7100;
+     border-color: #ce7100;
+}
+
+.btn-primary.disabled, .btn-primary:disabled, .btn-primary[disabled] {
+     background-color: #ce7100;
+     background-image: none;
+}
+
+.btn, .panel, .panel-heading, .form-control {
+     border-radius: 0px;
+}
+
+.panel-primary > .panel-heading {
+     background-color: #eeeeee;
+     color: #000000;
+}
+
+/*
+.panel-primary {
+     border-color: #ababab;
+}*/
+
+
+/* custom: Thijs Brentjens for Geonovum */
+body {
+     font-family: Verdana,Tahoma,"DejaVu Sans",sans-serif;
+     color: #64686b;
+}
+
+a {
+     color: #0085c6;
+}
+
+ul.nav-tabs, .nav-tabs > li.active > a, .nav-tabs > li.active > a:focus, .nav-tabs > li.active > a:hover {
+     border-color: #bec1c3 ! important;
+}
+
+.nav-tabs > li > a, .nav-tabs > li.active > a {
+     border-bottom: medium none;
+     color: #000000;
+     font-weight: bold;
+}
+
+.nav-tabs > li > a {
+     border-radius: 0px;
+     border: 1px solid transparent;
+     height: 2.2em;
+}
+
+
+/* some table stuff, Geonovum alike (no Geonovum style for tables present) */
+
+.table-bordered {
+    border: none; /* in general, no border */
+}
+
+table.table-bordered th, table.table-bordered td, table.table-bordered.dataTable th, table.table-bordered.dataTable td {
+     -moz-border-bottom-colors: none;
+     -moz-border-left-colors: none;
+     -moz-border-right-colors: none;
+     -moz-border-top-colors: none;
+     border-bottom: 1px solid #dddfe0 ! important;
+     border-image: none;
+     border-left: medium none;
+     border-right: medium none;
+     border-top: medium none;
+}
+
+.table-bordered > tbody > tr > td, .table-bordered > tbody > tr > th, .table-bordered > tfoot > tr > td, .table-bordered > tfoot > tr > th, .table-bordered > thead > tr > td, .table-bordered > thead > tr > th, td.even, td.odd, tr {
+     -moz-border-bottom-colors: none;
+     -moz-border-left-colors: none;
+     -moz-border-right-colors: none;
+     -moz-border-top-colors: none;
+     /*background: rgba(0, 0, 0, 0) none repeat scroll 0% 0% ! important;*/
+     border-bottom: 1px solid #dddfe0 ! important;
+     border-image: none;
+     border-left: medium none;
+     border-right: medium none;
+     border-top: medium none;
+}
+
+/* home override */
+.navbar-brand {
+    background-image: url("http://geonovum.nl/sites/all/themes/insiders/images/navigation-home.png");
+    background-position: center 14px;
+    background-repeat: no-repeat;
+    background-color: #799a00;
+    text-indent: -9999px;
+    width: 48px;
+}
+
+.navbar-brand:hover {
+    background-color: #ffffff !important;
+    background-image: url("http://geonovum.nl/sites/all/themes/insiders/images/navigation-home-hover.png");
+}
+
+/* Geonovum sizes for headings */
+h1 {
+     font-size: 2.17em;
+     line-height: 1.68971em;
+     margin-bottom: 0.84485em;
+     margin-top: 0.84485em;
+}
+
+h2 {
+     font-size: 1.5em;
+     line-height: 1.22222em;
+     margin-bottom: 1.22222em;
+     margin-top: 1.22222em;
+}
+
+h3 {
+     font-size: 1.25em;
+     line-height: 1.46667em;
+     margin-bottom: 1.46667em;
+     margin-top: 1.46667em;
+}
+
+h4 {
+     font-size: 1em;
+     line-height: 1.83333em;
+     margin-bottom: 1.83333em;
+     margin-top: 1.83333em;
+}
+
+h5 {
+     font-size: 1em;
+     line-height: 1.83333em;
+     margin-bottom: 1.83333em;
+     margin-top: 1.83333em;
+}
+
+h6 {
+     font-size: 1em;
+     line-height: 1.83333em;
+     margin-bottom: 1.83333em;
+     margin-top: 1.83333em;
+}
+
+
+
+ul.nav-tabs, .nav-tabs > li.active > a, .nav-tabs > li.active > a:focus, .nav-tabs > li.active > a:hover {
+     border-color: #bec1c3 ! important;
+}
+
+.nav-tabs > li > a:hover {
+     background: rgba(0, 0, 0, 0) none repeat scroll 0% 0%;
+     border: 1px solid rgba(0, 0, 0, 0) ! important;
+     text-decoration: underline;
+}
+
+.panel-primary > .panel-heading {
+     -moz-border-bottom-colors: none;
+     -moz-border-left-colors: none;
+     -moz-border-right-colors: none;
+     -moz-border-top-colors: none;
+     background: rgba(0, 0, 0, 0) none repeat scroll 0% 0%;
+     border-bottom: 1px solid #bec1c3 !important;
+     border-image: none;
+     border-left: none;
+     border-right: none;
+}
+
+.panel-primary {
+     border: 1px solid #bec1c3;
+}
+
+h3.panel-title, h3.panel-title a {
+     font-weight: bold;
+}

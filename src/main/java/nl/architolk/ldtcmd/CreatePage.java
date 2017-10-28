@@ -163,14 +163,32 @@ public class CreatePage {
 				configPackageOutput.close(); //Close of outputstream is necessary to prevent deadlock because we don't have a multi-treaded application
 
 				System.out.println("rdf2view.xsl (create configuration XML from RDF)");
-				ByteArrayOutputStream view = new ByteArrayOutputStream();
-				transform(new StreamSource(configPackage), "xsl/rdf2view.xsl", new StreamResult(view));
+				PipedInputStream view = new PipedInputStream(PIPE_BUFFER);
+				PipedOutputStream viewOutput = new PipedOutputStream(view);
+				transform(new StreamSource(configPackage), "xsl/rdf2view.xsl", new StreamResult(viewOutput));
+				viewOutput.close();
 				
 				System.out.println("Merge view with context and original data");
-				ByteArrayOutputStream dataPackage = new ByteArrayOutputStream();
-				mergeXML("root", dataPackage, new StreamSource(new StringReader(CONTEXT)), new StreamSource(new StringReader(view.toString())),new StreamSource(new File(args[0]+".xml")));
+				PipedInputStream dataPackage = new PipedInputStream(PIPE_BUFFER);
+				PipedOutputStream dataPackageOutput = new PipedOutputStream(dataPackage);
+				mergeXML("root", dataPackageOutput, new StreamSource(new StringReader(CONTEXT)), new StreamSource(view),new StreamSource(new File("data/"+args[0]+".xml")));
+				dataPackageOutput.close();
+
+				System.out.println("rdf2rdfa.xsl (create RDF annotated with UI declarations)");
+				PipedInputStream rdfa = new PipedInputStream(PIPE_BUFFER);
+				PipedOutputStream rdfaOutput = new PipedOutputStream(rdfa);
+				transform(new StreamSource(dataPackage), "xsl/rdf2rdfa.xsl", new StreamResult(rdfaOutput));
+				rdfaOutput.close();
 				
-				dataPackage.writeTo(new FileOutputStream("page.xml"));
+				System.out.println("rdf2html.xsl (create HTML from RDF annotated with UI declarations)");
+				PipedInputStream html = new PipedInputStream(PIPE_BUFFER);
+				PipedOutputStream htmlOutput = new PipedOutputStream(html);
+				transform(new StreamSource(rdfa), "xsl/rdf2html.xsl", new StreamResult(htmlOutput));
+				htmlOutput.close();
+				
+				System.out.println("convert xml to html (using xslt)");
+				FileOutputStream htmlFile = new FileOutputStream("html/"+args[0]+".html");
+				transform(new StreamSource(html), "xsl/to-html.xsl", new StreamResult(htmlFile));
 				
 			} catch (Exception ex) {
 				System.out.println("EXCEPTION: " + ex); 
