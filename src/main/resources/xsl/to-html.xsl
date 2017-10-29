@@ -5,6 +5,8 @@
 <xsl:output method="html" indent="yes" version="4.0"/>
 
 <xsl:template match="/">
+	<xsl:text disable-output-escaping="yes">&lt;!DOCTYPE html&gt;
+</xsl:text>
 	<xsl:copy-of select="html"/>
 </xsl:template>
 

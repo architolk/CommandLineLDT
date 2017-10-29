@@ -7,14 +7,6 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.transform.stream.StreamResult;
 
-import javax.xml.stream.events.XMLEvent;
-import javax.xml.stream.XMLOutputFactory;
-import javax.xml.stream.XMLEventFactory;
-import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLEventWriter;
-import javax.xml.stream.XMLEventReader;
-import javax.xml.stream.XMLStreamException;
-
 import java.util.HashMap;
 
 import java.io.File;
@@ -23,6 +15,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.io.StringBufferInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.PipedInputStream;
@@ -68,13 +61,10 @@ public class CreatePage {
 	private static final String CONFIG_TEMPLATE = "<input><stage>http://localhost:8080/stage</stage><representation>http://localhost:8080/stage#REPRESENTATION</representation></input>";
 	private static final String CONTEXT = "<context staticroot='.'><title>Command line LDT</title></context>";
 	private static final String SPARQL_ENDPOINT = "http://localhost:8890/sparql";
+	//private static final String SPARQL_GET_REPRESENTATIONS = "construct {<urn:test> rdfs:label 'hoi'} where {}";
 	private static int PIPE_BUFFER = 1000000; // Large buffer size to prevent deadlock. Better solution would be a multi-treaded application
 	
-	// Factories
 	private static final TransformerFactory tfactory = TransformerFactory.newInstance();
-	private static final XMLOutputFactory outputFactory = XMLOutputFactory.newInstance();
-	private static final XMLEventFactory eventFactory = XMLEventFactory.newInstance();
-	private static final XMLInputFactory inputFactory = XMLInputFactory.newFactory();
 
 	private static void transform(StreamSource source, String xslResource, StreamResult result) throws TransformerConfigurationException,TransformerException { 
 
@@ -90,59 +80,6 @@ public class CreatePage {
 		
 	}
 
-	private static void mergeXML(String rootName, OutputStream result, StreamSource... source) throws XMLStreamException {
-
-		XMLEvent newLine = eventFactory.createDTD("\n");
-	
-		// Register stream for output
-		XMLEventWriter eventWriter = outputFactory.createXMLEventWriter(result);
-	
-		// Create the root header of the document
-		eventWriter.add(eventFactory.createStartDocument());
-		eventWriter.add(newLine);
-		eventWriter.add(eventFactory.createStartElement("","",rootName));
-		eventWriter.add(newLine);
-
-		// Copy original sources
-		for (int i = 0; i < source.length; i++) {
-			XMLEventReader test = inputFactory.createXMLEventReader(source[i]);
-			while (test.hasNext()) {
-				XMLEvent event= test.nextEvent();
-				//avoiding start(<?xml version="1.0"?>) and end of the documents;
-				if (event.getEventType()!= XMLEvent.START_DOCUMENT && event.getEventType() != XMLEvent.END_DOCUMENT) {
-					eventWriter.add(event);
-				}
-				test.close();
-			}
-			eventWriter.add(newLine);
-		}
-
-		// Create the root footer of the document
-        eventWriter.add(eventFactory.createEndElement("", "", rootName));
-        eventWriter.add(newLine);
-        eventWriter.add(eventFactory.createEndDocument());
-		
-        eventWriter.close();
-
-	}
-	
-	private static void copyXML(StreamSource source, OutputStream result) throws XMLStreamException {
-
-		// Register stream for output
-		XMLEventWriter eventWriter = outputFactory.createXMLEventWriter(result);
-	
-		// Copy original source
-		XMLEventReader test = inputFactory.createXMLEventReader(source);
-		while (test.hasNext()) {
-			XMLEvent event= test.nextEvent();
-			eventWriter.add(event);
-			test.close();
-		}
-
-        eventWriter.close();
-
-	}
-	
 	private static InputStream executeSparqlRequest(String query) throws UnsupportedEncodingException, IOException {
 		
 		//Create the client
@@ -156,6 +93,7 @@ public class CreatePage {
 		nameValuePairs.add(new BasicNameValuePair("query", query));
 		httpRequest.setEntity(new UrlEncodedFormEntity(nameValuePairs));
 		httpRequest.addHeader("accept","application/rdf+xml");
+		httpRequest.addHeader("accept-encoding","UTF-8");
 		
 		//Execute the request
 		CloseableHttpResponse response = httpclient.execute(httpRequest);
@@ -165,7 +103,7 @@ public class CreatePage {
 		if (status < 200 || status >= 300) throw new IOException(response.getStatusLine().toString());
 		HttpEntity entity = response.getEntity();
 		if (entity==null) throw new IOException("No content http error");
-		
+
 		return entity.getContent();
 	}
 
@@ -209,12 +147,24 @@ public class CreatePage {
 
 		if (args.length!=1) {
 			System.out.println("Usage: ldtcmd <Representation>");
+
 		} else {
 			System.out.println("Creating page: " + args[0]);
 			
 			try {
 				// set the TransformFactory to use the Saxon TransformerFactoryImpl method  
 				System.setProperty("javax.xml.transform.TransformerFactory", "net.sf.saxon.TransformerFactoryImpl");
+				
+				/*
+					First part input:
+					- the representation name in args[0]
+					
+					First part execution:
+					- retrieve the configuration RDF/XML from the triplestore
+					- retrieve the data as RDF/XML from the triplestore, using the queries from the configuration
+					
+					This part is the "InformationProduct" part in the dotwebstack
+				*/
 				
 				System.out.println("Create representation query (using xslt)");
 				StreamSource inputSource = new StreamSource(new StringReader(CONFIG_TEMPLATE.replaceAll("REPRESENTATION",args[0])));
@@ -226,7 +176,13 @@ public class CreatePage {
 
 				//Store the configuration, to be used again
 				ByteArrayOutputStream configuration = new ByteArrayOutputStream();
-				copyXML(new StreamSource(response),configuration);
+				XMLMerger.copy(configuration, new StreamSource(response));
+				
+				//Create output stream for rdf results, more than one result is possible, so create merger
+				PipedInputStream rdfdata = new PipedInputStream(PIPE_BUFFER); 
+				PipedOutputStream rdfdataOutput = new PipedOutputStream(rdfdata);
+				XMLMerger merger = new XMLMerger(rdfdataOutput);
+				merger.startMerging("results");
 				
 				System.out.println("Retrieve data from configuration, execute SPARQL query (result = RDF/XML)");
 				NodeList queries = getQueries(new ByteArrayInputStream(configuration.toByteArray()));
@@ -234,17 +190,29 @@ public class CreatePage {
 					// The query
 					String query = queries.item(i).getNodeValue();
 					if (query!=null) {
-						System.out.println(query);
+						//Execute sparql query
 						InputStream data = executeSparqlRequest(query.replaceAll("@STAGE@","http://localhost:8080/stage"));
-						//Send output to file, just for now
-						copyXML(new StreamSource(data),new FileOutputStream("data/sparqlresult"+ i +".xml"));
+						//Merge data
+						merger.addXML(new StreamSource(data));
 					}
 				}
-
+				
+				//Finish merging, outputstream is complete
+				merger.finishMerging();
+				rdfdataOutput.close();
+				
+				/*
+					Second part, input:
+					- configuration: an OutputStream containing the RDF/XML configuration
+					- rdfdata:  an InputStream containing the RDF/XML data (streamed from http)
+					
+					This part is the "Representation" part in the dotwebstack, creating html from rdf
+				*/
+				
 				System.out.println("Merge configuration result with context");
 				PipedInputStream configPackage = new PipedInputStream(PIPE_BUFFER); 
 				PipedOutputStream configPackageOutput = new PipedOutputStream(configPackage);
-				mergeXML("root", configPackageOutput, new StreamSource(new ByteArrayInputStream(configuration.toByteArray())));
+				XMLMerger.merge("root", configPackageOutput, new StreamSource(new ByteArrayInputStream(configuration.toByteArray())));
 				configPackageOutput.close(); //Close of outputstream is necessary to prevent deadlock because we don't have a multi-treaded application
 
 				System.out.println("rdf2view.xsl (create configuration XML from RDF)");
@@ -257,7 +225,8 @@ public class CreatePage {
 				System.out.println("Merge view with context and original data");
 				PipedInputStream dataPackage = new PipedInputStream(PIPE_BUFFER);
 				PipedOutputStream dataPackageOutput = new PipedOutputStream(dataPackage);
-				mergeXML("root", dataPackageOutput, new StreamSource(new StringReader(CONTEXT)), new StreamSource(view),new StreamSource(new File("data/"+args[0]+".xml")));
+				//XMLMerger.merge("root", dataPackageOutput, new StreamSource(new StringReader(CONTEXT)), new StreamSource(view),new StreamSource(new ByteArrayInputStream(rdfdata.toByteArray())));
+				XMLMerger.merge("root", dataPackageOutput, new StreamSource(new StringReader(CONTEXT)), new StreamSource(view),new StreamSource(rdfdata));
 				dataPackageOutput.close();
 
 				System.out.println("rdf2rdfa.xsl (create RDF annotated with UI declarations)");
