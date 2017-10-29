@@ -72,7 +72,6 @@ public class CreatePage {
 		InputStream xslStream = CreatePage.class.getClassLoader().getResourceAsStream(xslResource);
 	
 		// Create a transformer for the stylesheet. 
-		//Transformer transformer = tfactory.newTransformer(new StreamSource(new File(xslFile))); 
 		Transformer transformer = tfactory.newTransformer(new StreamSource(xslStream)); 
 
 		// Transform the source XML 
@@ -92,7 +91,7 @@ public class CreatePage {
 		List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>();
 		nameValuePairs.add(new BasicNameValuePair("query", query));
 		httpRequest.setEntity(new UrlEncodedFormEntity(nameValuePairs));
-		httpRequest.addHeader("accept","application/rdf+xml");
+		httpRequest.addHeader("accept","application/sparql-results+xml,application/rdf+xml");
 		httpRequest.addHeader("accept-encoding","UTF-8");
 		
 		//Execute the request
@@ -192,8 +191,15 @@ public class CreatePage {
 					if (query!=null) {
 						//Execute sparql query
 						InputStream data = executeSparqlRequest(query.replaceAll("@STAGE@","http://localhost:8080/stage"));
+
+						//Transform from sparql result to rdf (cleaned)
+						ByteArrayOutputStream dataEnriched = new ByteArrayOutputStream();
+						XMLMerger.merge("root",dataEnriched,new StreamSource(data));
+						ByteArrayOutputStream cleanedData = new ByteArrayOutputStream();
+						transform(new StreamSource(new ByteArrayInputStream(dataEnriched.toByteArray())), "xsl/sparql2rdfa.xsl", new StreamResult(cleanedData));
+
 						//Merge data
-						merger.addXML(new StreamSource(data));
+						merger.addXML(new StreamSource(new ByteArrayInputStream(cleanedData.toByteArray())));
 					}
 				}
 				
@@ -204,10 +210,12 @@ public class CreatePage {
 				/*
 					Second part, input:
 					- configuration: an OutputStream containing the RDF/XML configuration
-					- rdfdata:  an InputStream containing the RDF/XML data (streamed from http)
+					- rdfdata:  an InputStream containing the RDF/XML data (streamed and cleaned from http)
 					
 					This part is the "Representation" part in the dotwebstack, creating html from rdf
 				*/
+				
+				//XMLMerger.copy(new FileOutputStream("output.xml"),new StreamSource(rdfdata));
 				
 				System.out.println("Merge configuration result with context");
 				PipedInputStream configPackage = new PipedInputStream(PIPE_BUFFER); 
@@ -221,11 +229,9 @@ public class CreatePage {
 				transform(new StreamSource(configPackage), "xsl/rdf2view.xsl", new StreamResult(viewOutput));
 				viewOutput.close();
 				
-				//Original data should not be from file, but from stream, see above. Only it should be merged... new class needed...
 				System.out.println("Merge view with context and original data");
 				PipedInputStream dataPackage = new PipedInputStream(PIPE_BUFFER);
 				PipedOutputStream dataPackageOutput = new PipedOutputStream(dataPackage);
-				//XMLMerger.merge("root", dataPackageOutput, new StreamSource(new StringReader(CONTEXT)), new StreamSource(view),new StreamSource(new ByteArrayInputStream(rdfdata.toByteArray())));
 				XMLMerger.merge("root", dataPackageOutput, new StreamSource(new StringReader(CONTEXT)), new StreamSource(view),new StreamSource(rdfdata));
 				dataPackageOutput.close();
 
