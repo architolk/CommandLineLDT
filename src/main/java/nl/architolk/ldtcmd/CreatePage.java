@@ -15,17 +15,20 @@ import javax.xml.stream.XMLEventWriter;
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLStreamException;
 
+import java.util.HashMap;
+
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.OutputStream;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream; 
-import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
@@ -35,6 +38,18 @@ import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.HttpEntity;
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpression;
+import javax.xml.xpath.XPathExpressionException;
+import javax.xml.xpath.XPathFactory;
+import org.w3c.dom.Document;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -111,6 +126,23 @@ public class CreatePage {
 
 	}
 	
+	private static void copyXML(StreamSource source, OutputStream result) throws XMLStreamException {
+
+		// Register stream for output
+		XMLEventWriter eventWriter = outputFactory.createXMLEventWriter(result);
+	
+		// Copy original source
+		XMLEventReader test = inputFactory.createXMLEventReader(source);
+		while (test.hasNext()) {
+			XMLEvent event= test.nextEvent();
+			eventWriter.add(event);
+			test.close();
+		}
+
+        eventWriter.close();
+
+	}
+	
 	private static InputStream executeSparqlRequest(String query) throws UnsupportedEncodingException, IOException {
 		
 		//Create the client
@@ -137,6 +169,42 @@ public class CreatePage {
 		return entity.getContent();
 	}
 
+	private static NodeList getQueries(InputStream input) throws ParserConfigurationException, IOException, SAXException, XPathExpressionException {
+
+		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+		factory.setNamespaceAware(true);
+		DocumentBuilder builder;
+		Document doc = null;
+		XPathExpression expr = null;
+		builder = factory.newDocumentBuilder();
+		doc = builder.parse(input);
+
+		//Create namespaces
+		HashMap<String, String> prefMap = new HashMap<String, String>() {{
+			put("rdf", "http://www.w3.org/1999/02/22-rdf-syntax-ns#");
+			put("elmo", "http://bp4mc2.org/elmo/def#");
+		}};
+		SimpleNamespaceContext namespaces = new SimpleNamespaceContext(prefMap);
+		
+		// create an XPathFactory
+		XPathFactory xFactory = XPathFactory.newInstance();
+
+		// create an XPath object
+		XPath xpath = xFactory.newXPath();
+
+		//Set namespaces
+		xpath.setNamespaceContext(namespaces);
+		
+		// compile the XPath expression
+		expr = xpath.compile("//rdf:Description/elmo:query/text()");
+		// run the query and get a nodeset
+		Object result = expr.evaluate(doc, XPathConstants.NODESET);
+
+		// cast the result to a DOM NodeList and return
+		return (NodeList) result;
+	
+	}
+	
 	public static void main(String[] args) {
 
 		if (args.length!=1) {
@@ -156,10 +224,27 @@ public class CreatePage {
 				System.out.println("Execute SPARQL query (result = the LDT configuration in RDF/XML)");
 				InputStream response = executeSparqlRequest(configQueryStream.toString());
 
+				//Store the configuration, to be used again
+				ByteArrayOutputStream configuration = new ByteArrayOutputStream();
+				copyXML(new StreamSource(response),configuration);
+				
+				System.out.println("Retrieve data from configuration, execute SPARQL query (result = RDF/XML)");
+				NodeList queries = getQueries(new ByteArrayInputStream(configuration.toByteArray()));
+				for (int i=0; i<queries.getLength();i++){
+					// The query
+					String query = queries.item(i).getNodeValue();
+					if (query!=null) {
+						System.out.println(query);
+						InputStream data = executeSparqlRequest(query.replaceAll("@STAGE@","http://localhost:8080/stage"));
+						//Send output to file, just for now
+						copyXML(new StreamSource(data),new FileOutputStream("data/sparqlresult"+ i +".xml"));
+					}
+				}
+
 				System.out.println("Merge configuration result with context");
 				PipedInputStream configPackage = new PipedInputStream(PIPE_BUFFER); 
 				PipedOutputStream configPackageOutput = new PipedOutputStream(configPackage);
-				mergeXML("root", configPackageOutput, new StreamSource(response));
+				mergeXML("root", configPackageOutput, new StreamSource(new ByteArrayInputStream(configuration.toByteArray())));
 				configPackageOutput.close(); //Close of outputstream is necessary to prevent deadlock because we don't have a multi-treaded application
 
 				System.out.println("rdf2view.xsl (create configuration XML from RDF)");
@@ -168,6 +253,7 @@ public class CreatePage {
 				transform(new StreamSource(configPackage), "xsl/rdf2view.xsl", new StreamResult(viewOutput));
 				viewOutput.close();
 				
+				//Original data should not be from file, but from stream, see above. Only it should be merged... new class needed...
 				System.out.println("Merge view with context and original data");
 				PipedInputStream dataPackage = new PipedInputStream(PIPE_BUFFER);
 				PipedOutputStream dataPackageOutput = new PipedOutputStream(dataPackage);
