@@ -1,0 +1,12 @@
+<rdf:RDF	xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+			xmlns:elmo="http://bp4mc2.org/elmo/def#"
+>
+	<rdf:Description rdf:about="http://localhost:8080/stage#LocalExample">
+		<elmo:query>
+			select (count(*) as ?count)
+			where {
+				?s?p?o
+			}
+		</elmo:query>
+	</rdf:Description>
+</rdf:RDF>
