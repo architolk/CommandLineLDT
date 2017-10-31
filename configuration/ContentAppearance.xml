@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?><rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#" xmlns:elmo="http://bp4mc2.org/elmo/def#">
+  <rdf:Description rdf:about="http://localhost:8080/stage#HeaderAppearance">
+    <rdf:type rdf:resource="http://bp4mc2.org/elmo/def#Part"></rdf:type>
+    <elmo:without-parameter rdf:datatype="http://www.w3.org/2001/XMLSchema#string">jmetertest</elmo:without-parameter>
+    <elmo:appearance rdf:resource="http://bp4mc2.org/elmo/def#HeaderAppearance"></elmo:appearance>
+    <elmo:data rdf:nodeID="b579164"></elmo:data>
+    <elmo:index rdf:datatype="http://www.w3.org/2001/XMLSchema#string">~</elmo:index>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://localhost:8080/stage#NavbarSearchAppearance">
+    <rdf:type rdf:resource="http://bp4mc2.org/elmo/def#Part"></rdf:type>
+    <elmo:without-parameter rdf:datatype="http://www.w3.org/2001/XMLSchema#string">jmetertest</elmo:without-parameter>
+	<elmo:xquery><![CDATA[PREFIX elmo: <http://bp4mc2.org/elmo/def#> CONSTRUCT { ?s?p?o. ?sc?pc?oc. ?scc?pcc?occ. } WHERE { GRAPH <http://localhost:8080/stage> {<http://localhost:8080/stage#NavbarSearchAppearance> elmo:data ?s. ?s?p?o. OPTIONAL { ?s elmo:data ?sc. ?sc ?pc ?oc. OPTIONAL { ?sc elmo:data ?scc. ?scc ?pcc ?occ. } } }}]]></elmo:xquery>
+    <elmo:appearance rdf:resource="http://bp4mc2.org/elmo/def#NavbarSearchAppearance"></elmo:appearance>
+    <elmo:data rdf:nodeID="b579165"></elmo:data>
+    <elmo:index rdf:datatype="http://www.w3.org/2001/XMLSchema#string">~</elmo:index>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://localhost:8080/stage#ContentAppearance">
+    <rdf:type rdf:resource="http://bp4mc2.org/elmo/def#Representation"></rdf:type>
+    <elmo:contains rdf:resource="http://localhost:8080/stage#HeaderAppearance"></elmo:contains>
+    <elmo:contains rdf:resource="http://localhost:8080/stage#NavbarSearchAppearance"></elmo:contains>
+    <elmo:query rdf:resource="http://localhost:8080/stage#ContentAppearanceQuery"></elmo:query>
+    <elmo:query rdf:datatype="http://www.w3.org/2001/XMLSchema#string">
+		prefix dbo: &lt;http://dbpedia.org/ontology/&gt;
+		prefix testo: &lt;http://localhost:8080/def/test#&gt;
+		construct {
+			?s?p?o.
+			?w ?wp ?wo.
+		}
+		where {
+			graph &lt;@STAGE@&gt; {
+				?s?p?o.
+				OPTIONAL {
+					?s dbo:isPartOf ?w.
+					?w ?wp ?wo
+					FILTER (?wp!=testo:largestCities
+						&amp;&amp;	?wp!=dbo:populationTotal
+					)
+				}
+				FILTER (?s = &lt;http://dbpedia.org/resource/Amersfoort&gt;)
+				FILTER (?p != testo:districtNames)
+			}
+		}
+	</elmo:query>
+    <elmo:url-pattern rdf:datatype="http://www.w3.org/2001/XMLSchema#string">/query/ContentAppearance</elmo:url-pattern>
+  </rdf:Description>
+</rdf:RDF>

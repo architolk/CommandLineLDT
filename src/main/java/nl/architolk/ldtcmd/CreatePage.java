@@ -151,6 +151,11 @@ public class CreatePage {
 				ByteArrayOutputStream configuration = new ByteArrayOutputStream();
 				XMLMerger.copy(configuration, new StreamSource(response));
 				
+				//Save configuration to file, if remoteConfig - to be used again
+				if (remoteConfig) {
+					configuration.writeTo(new FileOutputStream("configuration/"+args[0]+".saved.xml"));
+				}
+				
 				//Create output stream for rdf results, more than one result is possible, so create merger
 				PipedInputStream rdfdata = new PipedInputStream(PIPE_BUFFER); 
 				PipedOutputStream rdfdataOutput = new PipedOutputStream(rdfdata);

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?><rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#" xmlns:elmo="http://bp4mc2.org/elmo/def#">
+  <rdf:Description rdf:about="http://localhost:8080/stage#HeaderAppearance">
+    <rdf:type rdf:resource="http://bp4mc2.org/elmo/def#Part"></rdf:type>
+    <elmo:appearance rdf:resource="http://bp4mc2.org/elmo/def#HeaderAppearance"></elmo:appearance>
+    <elmo:data rdf:nodeID="b579164"></elmo:data>
+	<elmo:xquery><![CDATA[PREFIX elmo: <http://bp4mc2.org/elmo/def#> CONSTRUCT { ?s?p?o. ?sc?pc?oc. ?scc?pcc?occ. } WHERE { GRAPH <http://localhost:8080/stage> {<http://localhost:8080/stage#HeaderAppearance> elmo:data ?s. ?s?p?o. OPTIONAL { ?s elmo:data ?sc. ?sc ?pc ?oc. OPTIONAL { ?sc elmo:data ?scc. ?scc ?pcc ?occ. } } }}]]></elmo:xquery>
+    <elmo:index rdf:datatype="http://www.w3.org/2001/XMLSchema#string">~</elmo:index>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://localhost:8080/stage#HtmlAppearance">
+    <rdf:type rdf:resource="http://bp4mc2.org/elmo/def#Representation"></rdf:type>
+    <elmo:contains rdf:resource="http://localhost:8080/stage#HeaderAppearance"></elmo:contains>
+    <elmo:contains rdf:resource="http://localhost:8080/stage#NavbarSearchAppearance"></elmo:contains>
+    <elmo:contains rdf:resource="http://localhost:8080/stage#FooterAppearance"></elmo:contains>
+	<elmo:query><![CDATA[PREFIX elmo: <http://bp4mc2.org/elmo/def#> CONSTRUCT { ?s?p?o. ?sc?pc?oc. ?scc?pcc?occ. } WHERE { GRAPH <http://localhost:8080/stage> {<http://localhost:8080/stage#HtmlAppearance> elmo:data ?s. ?s?p?o. OPTIONAL { ?s elmo:data ?sc. ?sc ?pc ?oc. OPTIONAL { ?sc elmo:data ?scc. ?scc ?pcc ?occ. } } }}]]></elmo:query>
+    <elmo:appearance rdf:resource="http://bp4mc2.org/elmo/def#HtmlAppearance"></elmo:appearance>
+    <elmo:index rdf:datatype="http://www.w3.org/2001/XMLSchema#string">1</elmo:index>
+    <elmo:url-pattern rdf:datatype="http://www.w3.org/2001/XMLSchema#string">^http(s|)://[^/]+(/(?!resource)[^/]+)?(/|)$</elmo:url-pattern>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://localhost:8080/stage#NavbarSearchAppearance">
+    <rdf:type rdf:resource="http://bp4mc2.org/elmo/def#Part"></rdf:type>
+    <elmo:without-parameter rdf:datatype="http://www.w3.org/2001/XMLSchema#string">jmetertest</elmo:without-parameter>
+    <elmo:appearance rdf:resource="http://bp4mc2.org/elmo/def#NavbarSearchAppearance"></elmo:appearance>
+    <elmo:data rdf:nodeID="b579165"></elmo:data>
+    <elmo:index rdf:datatype="http://www.w3.org/2001/XMLSchema#string">~</elmo:index>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://localhost:8080/stage#FooterAppearance">
+    <rdf:type rdf:resource="http://bp4mc2.org/elmo/def#Part"></rdf:type>
+    <elmo:appearance rdf:resource="http://bp4mc2.org/elmo/def#FooterAppearance"></elmo:appearance>
+    <elmo:data rdf:nodeID="b579240"></elmo:data>
+    <elmo:index rdf:datatype="http://www.w3.org/2001/XMLSchema#string">~</elmo:index>
+  </rdf:Description>
+</rdf:RDF>

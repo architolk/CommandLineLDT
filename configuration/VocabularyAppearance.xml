@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?><rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#" xmlns:elmo="http://bp4mc2.org/elmo/def#">
+  <rdf:Description rdf:about="http://localhost:8080/stage#HeaderAppearance">
+    <rdf:type rdf:resource="http://bp4mc2.org/elmo/def#Part"></rdf:type>
+    <elmo:without-parameter rdf:datatype="http://www.w3.org/2001/XMLSchema#string">jmetertest</elmo:without-parameter>
+    <elmo:appearance rdf:resource="http://bp4mc2.org/elmo/def#HeaderAppearance"></elmo:appearance>
+    <elmo:data rdf:nodeID="b579164"></elmo:data>
+    <elmo:index rdf:datatype="http://www.w3.org/2001/XMLSchema#string">~</elmo:index>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://localhost:8080/stage#NavbarSearchAppearance">
+    <rdf:type rdf:resource="http://bp4mc2.org/elmo/def#Part"></rdf:type>
+    <elmo:without-parameter rdf:datatype="http://www.w3.org/2001/XMLSchema#string">jmetertest</elmo:without-parameter>
+    <elmo:appearance rdf:resource="http://bp4mc2.org/elmo/def#NavbarSearchAppearance"></elmo:appearance>
+    <elmo:data rdf:nodeID="b579165"></elmo:data>
+    <elmo:index rdf:datatype="http://www.w3.org/2001/XMLSchema#string">~</elmo:index>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://localhost:8080/stage#VocabularyAppearance">
+    <rdf:type rdf:resource="http://bp4mc2.org/elmo/def#Representation"></rdf:type>
+    <elmo:contains rdf:resource="http://localhost:8080/stage#HeaderAppearance"></elmo:contains>
+    <elmo:contains rdf:resource="http://localhost:8080/stage#NavbarSearchAppearance"></elmo:contains>
+    <elmo:query rdf:resource="http://localhost:8080/stage#VocabularyQuery"></elmo:query>
+    <elmo:query rdf:datatype="http://www.w3.org/2001/XMLSchema#string">
+		prefix dcterms: &lt;http://purl.org/dc/terms/&gt;
+		prefix shacl: &lt;http://www.w3.org/ns/shacl#&gt;
+		CONSTRUCT {
+			?element rdf:type ?type.
+			?element rdfs:label ?label.
+			?element rdfs:comment ?def.
+			?element rdfs:subClassOf ?super.
+			?shape shacl:targetClass ?element.
+			?shape shacl:property ?pc.
+			?pc shacl:path ?pred.
+			?pc shacl:class ?class.
+			?pc shacl:datatype ?datatype.
+			?pc shacl:in ?collection.
+			?pc shacl:pattern ?pattern.
+		}
+		WHERE {
+			GRAPH &lt;http://localhost:8080/stage&gt; {
+				?element rdf:type ?type.
+				OPTIONAL {?element rdfs:label ?label}
+				OPTIONAL {?element rdfs:comment ?def}
+				OPTIONAL {
+					?element dcterms:subject ?begrip.
+					?begrip skos:definition ?def.
+				}
+				OPTIONAL {?element rdfs:subClassOf ?super}
+				OPTIONAL {
+					?shape shacl:targetClass ?element.
+					?shape shacl:property ?pc.
+					?pc (shacl:path|shacl:predicate) ?pred.
+					OPTIONAL {?pc shacl:class ?class}
+					OPTIONAL {?pc shacl:datatype ?datatype}
+					OPTIONAL {?pc shacl:in ?collection}
+					OPTIONAL {?pc shacl:pattern ?pattern}
+				}
+				FILTER (?type = owl:Class || ?type = owl:DatatypeProperty || ?type = owl:ObjectProperty || ?type = owl:Ontology)
+			}
+		}
+	</elmo:query>
+    <elmo:appearance rdf:resource="http://bp4mc2.org/elmo/def#VocabularyAppearance"></elmo:appearance>
+    <elmo:url-pattern rdf:datatype="http://www.w3.org/2001/XMLSchema#string">^http://localhost:8080/def/lotr(\.(xml|ttl|json))?$</elmo:url-pattern>
+  </rdf:Description>
+</rdf:RDF>
