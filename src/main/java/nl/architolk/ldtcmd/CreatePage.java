@@ -141,7 +141,16 @@ public class CreatePage {
 				InputStream response;
 				if (remoteConfig) {
 					System.out.println("Execute SPARQL query (result = the LDT configuration in RDF/XML)");
-					response = Sparql.executeRequest(SPARQL_ENDPOINT,configQueryStream.toString());
+					InputStream responseRemote = Sparql.executeRequest(SPARQL_ENDPOINT,configQueryStream.toString());
+
+					//Slight transform of remote response to fix order and elmo:data to elmo:query
+					//This is necessary, because rdf2view is part of "Part 2", but rdf2view is also needed for creating IP in LDT 1.x
+					response = new PipedInputStream(PIPE_BUFFER);
+					PipedOutputStream responseOutput = new PipedOutputStream((PipedInputStream)response);
+					transform(new StreamSource(responseRemote), "xsl/restructconfig.xsl", new StreamResult(responseOutput));
+					responseOutput.close();
+
+					
 				} else {
 					System.out.println("Retrieve configuration from filesystem");
 					response = new FileInputStream("configuration/"+args[0]+".xml");
